@@ -470,6 +470,7 @@ export default function PublicMenu() {
 
       {/* Footer */}
       {/* Footer */}
+{/* Footer */}
 <footer className="border-t border-stone-800/50 py-8 text-center">
   <p className="text-stone-500 text-sm">
     {settings?.cafe_name || 'كافيه غلاف'} — جميع الحقوق محفوظة
@@ -477,6 +478,10 @@ export default function PublicMenu() {
 
   <p className="text-stone-600 text-xs mt-2">
     هذا المنيو صُمّم وطُوّر بواسطة المهندس عمر شعلان عبد العزيز © 2026
+  </p>
+
+  <p className="text-stone-600 text-xs mt-1" dir="ltr">
+    0995339401
   </p>
 </footer>
     </div>
