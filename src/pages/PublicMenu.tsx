@@ -469,11 +469,16 @@ export default function PublicMenu() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-stone-800/50 py-8 text-center">
-        <p className="text-stone-500 text-sm">
-          {settings?.cafe_name || 'كافيه غلاف'} — جميع الحقوق محفوظة
-        </p>
-      </footer>
+      {/* Footer */}
+<footer className="border-t border-stone-800/50 py-8 text-center">
+  <p className="text-stone-500 text-sm">
+    {settings?.cafe_name || 'كافيه غلاف'} — جميع الحقوق محفوظة
+  </p>
+
+  <p className="text-stone-600 text-xs mt-2">
+    هذا المنيو صُمّم وطُوّر بواسطة المهندس عمر شعلان عبد العزيز © 2026
+  </p>
+</footer>
     </div>
   );
 }
