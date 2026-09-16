@@ -29,8 +29,22 @@ export default function PublicMenu() {
   >([]);
   const [showSearch, setShowSearch] = useState(false);
 
+  // عداد الزيارات
+  const [menuViews, setMenuViews] = useState<number | null>(null);
+
   useEffect(() => {
     loadData();
+
+    // تسجيل زيارة جديدة
+    const recordVisit = async () => {
+      const { data, error } = await supabase.rpc('increment_menu_views');
+
+      if (!error && data !== null) {
+        setMenuViews(Number(data));
+      }
+    };
+
+    recordVisit();
   }, []);
 
   const loadData = async () => {
@@ -53,13 +67,21 @@ export default function PublicMenu() {
 
       if (productsRes.data) {
         const hideUnavailable = settingsRes.data?.hide_unavailable ?? true;
-        const filtered = (productsRes.data as (Product & {
-          categories: { id: string; name: string; is_visible: boolean };
-        })[]).filter((p) => {
+
+        const filtered = (
+          productsRes.data as (Product & {
+            categories: {
+              id: string;
+              name: string;
+              is_visible: boolean;
+            };
+          })[]
+        ).filter((p) => {
           if (!p.categories?.is_visible) return false;
           if (hideUnavailable && !p.is_available) return false;
           return true;
         });
+
         setAllProducts(filtered);
       }
     } finally {
@@ -67,30 +89,45 @@ export default function PublicMenu() {
     }
   };
 
-  const openCategory = useCallback(async (cat: Category) => {
-    setSelectedCategory(cat);
-    setProductsLoading(true);
-    const { data } = await supabase
-      .from('products')
-      .select('*')
-      .eq('category_id', cat.id)
-      .eq('is_visible', true)
-      .order('display_order', { ascending: true });
+  const openCategory = useCallback(
+    async (cat: Category) => {
+      setSelectedCategory(cat);
+      setProductsLoading(true);
 
-    const hideUnavailable = settings?.hide_unavailable ?? true;
-    const filtered = (data as Product[] | null)?.filter((p) =>
-      hideUnavailable ? p.is_available : true
-    ) ?? [];
-    setCategoryProducts(filtered);
-    setProductsLoading(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [settings]);
+      const { data } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category_id', cat.id)
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+
+      const hideUnavailable = settings?.hide_unavailable ?? true;
+
+      const filtered =
+        (data as Product[] | null)?.filter((p) =>
+          hideUnavailable ? p.is_available : true
+        ) ?? [];
+
+      setCategoryProducts(filtered);
+      setProductsLoading(false);
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    },
+    [settings]
+  );
 
   const backToCategories = () => {
     setSelectedCategory(null);
     setSearchQuery('');
     setShowSearch(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
   };
 
   // Search
@@ -100,20 +137,28 @@ export default function PublicMenu() {
         setSearchResults([]);
         return;
       }
+
       const lower = query.trim().toLowerCase();
+
       const results = allProducts
         .filter((p) => p.name.toLowerCase().includes(lower))
         .map((p) => {
           const cat = categories.find((c) => c.id === p.category_id);
-          return { product: p, categoryName: cat?.name || '' };
+
+          return {
+            product: p,
+            categoryName: cat?.name || '',
+          };
         })
         .slice(0, 30);
+
       setSearchResults(results);
     };
   }, [allProducts, categories]);
 
   useEffect(() => {
     const timer = setTimeout(() => performSearch(searchQuery), 200);
+
     return () => clearTimeout(timer);
   }, [searchQuery, performSearch]);
 
@@ -133,18 +178,27 @@ export default function PublicMenu() {
     }
   };
 
-  const whatsappNumber = settings?.whatsapp?.replace(/[^0-9]/g, '') || '';
+  const whatsappNumber =
+    settings?.whatsapp?.replace(/[^0-9]/g, '') || '';
+
   const whatsappLink = whatsappNumber
-    ? `https://wa.me/${whatsappNumber.startsWith('0') ? '963' + whatsappNumber.slice(1) : whatsappNumber}`
+    ? `https://wa.me/${
+        whatsappNumber.startsWith('0')
+          ? '963' + whatsappNumber.slice(1)
+          : whatsappNumber
+      }`
     : '';
 
   if (loading) {
     return (
       <div className="min-h-screen bg-stone-950">
         <div className="h-64 bg-stone-800/40 animate-pulse" />
+
         <div className="max-w-5xl mx-auto px-4 -mt-20 relative z-10 space-y-6 pb-20">
           <div className="h-24 w-24 rounded-full bg-stone-700/60 animate-pulse mx-auto" />
+
           <div className="h-8 w-48 bg-stone-700/60 rounded-lg animate-pulse mx-auto" />
+
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <CategorySkeleton key={i} />
@@ -168,6 +222,7 @@ export default function PublicMenu() {
         ) : (
           <div className="w-full h-full bg-gradient-to-b from-stone-800 to-stone-950" />
         )}
+
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-stone-950" />
       </div>
 
@@ -207,22 +262,33 @@ export default function PublicMenu() {
           {settings?.opening_hours && (
             <div className="flex items-center gap-2 bg-stone-900/80 backdrop-blur-md border border-stone-700/50 rounded-full px-4 py-2">
               <Clock size={16} className="text-amber-500" />
-              <span className="text-sm text-stone-300">{settings.opening_hours}</span>
+
+              <span className="text-sm text-stone-300">
+                {settings.opening_hours}
+              </span>
             </div>
           )}
+
           {settings?.address && (
             <div className="flex items-center gap-2 bg-stone-900/80 backdrop-blur-md border border-stone-700/50 rounded-full px-4 py-2">
               <MapPin size={16} className="text-amber-500" />
-              <span className="text-sm text-stone-300">{settings.address}</span>
+
+              <span className="text-sm text-stone-300">
+                {settings.address}
+              </span>
             </div>
           )}
+
           {settings?.phone && (
             <a
               href={`tel:${settings.phone}`}
               className="flex items-center gap-2 bg-stone-900/80 backdrop-blur-md border border-stone-700/50 rounded-full px-4 py-2 hover:border-amber-600/50 transition-colors"
             >
               <Phone size={16} className="text-amber-500" />
-              <span className="text-sm text-stone-300">{settings.phone}</span>
+
+              <span className="text-sm text-stone-300">
+                {settings.phone}
+              </span>
             </a>
           )}
         </div>
@@ -237,9 +303,11 @@ export default function PublicMenu() {
               className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-5 py-2.5 rounded-full font-medium text-sm transition-all hover:scale-105 shadow-lg"
             >
               <Instagram size={18} />
+
               {settings?.instagram_username || 'إنستغرام'}
             </a>
           )}
+
           {whatsappLink && (
             <a
               href={whatsappLink}
@@ -251,6 +319,7 @@ export default function PublicMenu() {
               واتساب
             </a>
           )}
+
           {settings?.maps_url && (
             <a
               href={settings.maps_url}
@@ -262,6 +331,7 @@ export default function PublicMenu() {
               الموقع
             </a>
           )}
+
           <button
             onClick={handleShare}
             className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 border border-stone-600/50 text-white px-5 py-2.5 rounded-full font-medium text-sm transition-all hover:scale-105 shadow-lg"
@@ -278,6 +348,7 @@ export default function PublicMenu() {
               size={20}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-500"
             />
+
             <input
               type="text"
               value={searchQuery}
@@ -289,6 +360,7 @@ export default function PublicMenu() {
               placeholder="ابحث عن صنف..."
               className="w-full bg-stone-900/80 backdrop-blur-md border border-stone-700/50 rounded-2xl py-3.5 pr-12 pl-12 text-white placeholder-stone-500 focus:outline-none focus:border-amber-600/50 transition-colors"
             />
+
             {searchQuery && (
               <button
                 onClick={() => {
@@ -313,32 +385,41 @@ export default function PublicMenu() {
                 </div>
               ) : (
                 <div className="divide-y divide-stone-800">
-                  {searchResults.map(({ product, categoryName }) => (
-                    <div
-                      key={product.id}
-                      className="flex items-center justify-between p-4 hover:bg-stone-800/50 transition-colors cursor-pointer"
-                      onClick={() => {
-                        const cat = categories.find(
-                          (c) => c.id === product.category_id
-                        );
-                        if (cat) openCategory(cat);
-                        setShowSearch(false);
-                        setSearchQuery('');
-                      }}
-                    >
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-white text-sm">
-                          {product.name}
-                        </h4>
-                        <p className="text-xs text-stone-500 mt-0.5">
-                          {categoryName}
-                        </p>
+                  {searchResults.map(
+                    ({ product, categoryName }) => (
+                      <div
+                        key={product.id}
+                        className="flex items-center justify-between p-4 hover:bg-stone-800/50 transition-colors cursor-pointer"
+                        onClick={() => {
+                          const cat = categories.find(
+                            (c) => c.id === product.category_id
+                          );
+
+                          if (cat) openCategory(cat);
+
+                          setShowSearch(false);
+                          setSearchQuery('');
+                        }}
+                      >
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-white text-sm">
+                            {product.name}
+                          </h4>
+
+                          <p className="text-xs text-stone-500 mt-0.5">
+                            {categoryName}
+                          </p>
+                        </div>
+
+                        <span className="text-amber-400 font-bold text-sm">
+                          {formatPrice(
+                            product.price,
+                            settings?.currency || 'ل.س'
+                          )}
+                        </span>
                       </div>
-                      <span className="text-amber-400 font-bold text-sm">
-                        {formatPrice(product.price, settings?.currency || 'ل.س')}
-                      </span>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               )}
             </div>
@@ -348,7 +429,10 @@ export default function PublicMenu() {
         {/* Categories or Products */}
         {!selectedCategory && !showSearch && (
           <>
-            <h2 className="text-2xl font-bold mb-6 text-center">الفئات</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              الفئات
+            </h2>
+
             {categories.length === 0 ? (
               <div className="text-center text-stone-500 py-12">
                 لا توجد فئات متاحة حالياً
@@ -369,14 +453,20 @@ export default function PublicMenu() {
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-stone-700 to-stone-900 flex items-center justify-center">
-                        <Coffee size={40} className="text-amber-500/50" />
+                        <Coffee
+                          size={40}
+                          className="text-amber-500/50"
+                        />
                       </div>
                     )}
+
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
                     <div className="absolute bottom-0 right-0 left-0 p-4 text-right">
                       <h3 className="text-lg font-bold text-white mb-1">
                         {cat.name}
                       </h3>
+
                       {cat.description && (
                         <p className="text-xs text-stone-300 line-clamp-2">
                           {cat.description}
@@ -411,10 +501,12 @@ export default function PublicMenu() {
                   />
                 </div>
               )}
+
               <div>
                 <h2 className="text-2xl font-bold text-white">
                   {selectedCategory.name}
                 </h2>
+
                 {selectedCategory.description && (
                   <p className="text-sm text-stone-400 mt-1">
                     {selectedCategory.description}
@@ -444,20 +536,26 @@ export default function PublicMenu() {
                       <h3 className="font-bold text-white text-base mb-1">
                         {product.name}
                       </h3>
+
                       {product.description && (
                         <p className="text-sm text-stone-400 leading-relaxed">
                           {product.description}
                         </p>
                       )}
+
                       {!product.is_available && (
                         <span className="inline-block mt-2 text-xs font-medium text-red-400 bg-red-950/40 px-2 py-0.5 rounded-full">
                           غير متوفر
                         </span>
                       )}
                     </div>
+
                     <div className="text-left flex-shrink-0">
                       <span className="text-amber-400 font-bold text-lg whitespace-nowrap">
-                        {formatPrice(product.price, settings?.currency || 'ل.س')}
+                        {formatPrice(
+                          product.price,
+                          settings?.currency || 'ل.س'
+                        )}
                       </span>
                     </div>
                   </div>
@@ -469,21 +567,29 @@ export default function PublicMenu() {
       </div>
 
       {/* Footer */}
-      {/* Footer */}
-{/* Footer */}
-<footer className="border-t border-stone-800/50 py-8 text-center">
-  <p className="text-stone-500 text-sm">
-    {settings?.cafe_name || 'كافيه غلاف'} — جميع الحقوق محفوظة
-  </p>
+      <footer className="border-t border-stone-800/50 py-8 text-center">
+        <p className="text-stone-500 text-sm">
+          {settings?.cafe_name || 'كافيه غلاف'} — جميع الحقوق محفوظة
+        </p>
 
-  <p className="text-stone-600 text-xs mt-2">
-    هذا المنيو صُمّم وطُوّر بواسطة المهندس عمر شعلان عبد العزيز © 2026
-  </p>
+        <p className="text-stone-600 text-xs mt-2">
+          هذا المنيو صُمّم وطُوّر بواسطة المهندس عمر شعلان عبد العزيز © 2026
+        </p>
 
-  <p className="text-stone-600 text-xs mt-1" dir="ltr">
-    0995339401
-  </p>
-</footer>
+        <p className="text-stone-600 text-xs mt-1" dir="ltr">
+          0995339401
+        </p>
+
+        {/* رقم عداد الزيارات بدون عنوان */}
+        {menuViews !== null && (
+          <p
+            className="text-stone-700 text-xs mt-1"
+            dir="ltr"
+          >
+            {menuViews.toLocaleString('en-US')}
+          </p>
+        )}
+      </footer>
     </div>
   );
 }
