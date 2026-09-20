@@ -25,7 +25,10 @@ import {
 } from '@/lib/supabase';
 
 import { formatPrice } from '@/lib/format';
-import { CategorySkeleton, ProductSkeleton } from '@/components/Skeleton';
+import {
+  CategorySkeleton,
+  ProductSkeleton,
+} from '@/components/Skeleton';
 
 type CartItem = Product & {
   quantity: number;
@@ -35,7 +38,6 @@ export default function PublicMenu() {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
-
   const [loading, setLoading] = useState(true);
 
   const [selectedCategory, setSelectedCategory] =
@@ -44,7 +46,8 @@ export default function PublicMenu() {
   const [categoryProducts, setCategoryProducts] =
     useState<Product[]>([]);
 
-  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsLoading, setProductsLoading] =
+    useState(false);
 
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -67,10 +70,13 @@ export default function PublicMenu() {
   const [customerName, setCustomerName] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
 
+  // =========================
+  // تحميل البيانات
+  // =========================
+
   useEffect(() => {
     loadData();
 
-    // تسجيل زيارة جديدة
     const recordVisit = async () => {
       const { data, error } = await supabase.rpc(
         'increment_menu_views'
@@ -260,9 +266,7 @@ export default function PublicMenu() {
           title:
             settings?.cafe_name ||
             'كافيه غلاف',
-
           text: 'تصفح قائمة كافيه غلاف',
-
           url: window.location.href,
         });
       } catch {
@@ -276,7 +280,7 @@ export default function PublicMenu() {
   };
 
   // =========================
-  // واتساب
+  // رقم واتساب
   // =========================
 
   const whatsappRaw =
@@ -327,7 +331,7 @@ export default function PublicMenu() {
       ];
     });
 
-    setShowCart(true);
+    // لا نفتح السلة تلقائياً
   };
 
   // =========================
@@ -368,7 +372,7 @@ export default function PublicMenu() {
   };
 
   // =========================
-  // حسابات السلة
+  // حساب السلة
   // =========================
 
   const cartCount = cart.reduce(
@@ -385,7 +389,7 @@ export default function PublicMenu() {
   );
 
   // =========================
-  // إرسال الطلب واتساب
+  // إرسال الطلب عبر واتساب
   // =========================
 
   const handleWhatsAppOrder = () => {
@@ -440,9 +444,11 @@ export default function PublicMenu() {
     const encodedMessage =
       encodeURIComponent(message);
 
-    const url = `https://wa.me/${whatsappNumber.startsWith('0')
-      ? '963' + whatsappNumber.slice(1)
-      : whatsappNumber
+    const url = `https://wa.me/${
+      whatsappNumber.startsWith('0')
+        ? '963' +
+          whatsappNumber.slice(1)
+        : whatsappNumber
     }?text=${encodedMessage}`;
 
     window.open(
@@ -480,11 +486,13 @@ export default function PublicMenu() {
 
   return (
     <div className="min-h-screen bg-stone-950 text-white">
+
       {/* =========================
-          Hero Section
+          Hero
       ========================= */}
 
       <div className="relative h-[50vh] min-h-[320px] overflow-hidden">
+
         {settings?.cover_url ? (
           <img
             src={settings.cover_url}
@@ -499,7 +507,7 @@ export default function PublicMenu() {
       </div>
 
       {/* =========================
-          Header Info
+          Header
       ========================= */}
 
       <div className="max-w-5xl mx-auto px-4 -mt-32 relative z-10 pb-12">
@@ -507,22 +515,28 @@ export default function PublicMenu() {
         {/* Logo */}
 
         <div className="flex justify-center mb-6">
+
           {settings?.logo_url ? (
             <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-stone-800 shadow-2xl bg-stone-900">
+
               <img
                 src={settings.logo_url}
                 alt={settings.cafe_name}
                 className="w-full h-full object-cover"
               />
+
             </div>
           ) : (
             <div className="w-28 h-28 rounded-full bg-gradient-to-br from-amber-800 to-stone-900 border-4 border-stone-800 shadow-2xl flex items-center justify-center">
+
               <Coffee
                 size={48}
                 className="text-amber-400/80"
               />
+
             </div>
           )}
+
         </div>
 
         {/* Name */}
@@ -540,12 +554,13 @@ export default function PublicMenu() {
           </p>
         )}
 
-        {/* Info Cards */}
+        {/* Info */}
 
         <div className="flex flex-wrap justify-center gap-3 mb-6">
 
           {settings?.opening_hours && (
             <div className="flex items-center gap-2 bg-stone-900/80 backdrop-blur-md border border-stone-700/50 rounded-full px-4 py-2">
+
               <Clock
                 size={16}
                 className="text-amber-500"
@@ -554,11 +569,13 @@ export default function PublicMenu() {
               <span className="text-sm text-stone-300">
                 {settings.opening_hours}
               </span>
+
             </div>
           )}
 
           {settings?.address && (
             <div className="flex items-center gap-2 bg-stone-900/80 backdrop-blur-md border border-stone-700/50 rounded-full px-4 py-2">
+
               <MapPin
                 size={16}
                 className="text-amber-500"
@@ -567,6 +584,7 @@ export default function PublicMenu() {
               <span className="text-sm text-stone-300">
                 {settings.address}
               </span>
+
             </div>
           )}
 
@@ -575,6 +593,7 @@ export default function PublicMenu() {
               href={`tel:${settings.phone}`}
               className="flex items-center gap-2 bg-stone-900/80 backdrop-blur-md border border-stone-700/50 rounded-full px-4 py-2 hover:border-amber-600/50 transition-colors"
             >
+
               <Phone
                 size={16}
                 className="text-amber-500"
@@ -583,11 +602,13 @@ export default function PublicMenu() {
               <span className="text-sm text-stone-300">
                 {settings.phone}
               </span>
+
             </a>
           )}
+
         </div>
 
-        {/* Action Buttons */}
+        {/* Actions */}
 
         <div className="flex flex-wrap justify-center gap-3 mb-8">
 
@@ -598,10 +619,12 @@ export default function PublicMenu() {
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-5 py-2.5 rounded-full font-medium text-sm transition-all hover:scale-105 shadow-lg"
             >
+
               <Instagram size={18} />
 
               {settings?.instagram_username ||
                 'إنستغرام'}
+
             </a>
           )}
 
@@ -612,8 +635,11 @@ export default function PublicMenu() {
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-full font-medium text-sm transition-all hover:scale-105 shadow-lg"
             >
+
               <Phone size={18} />
+
               واتساب
+
             </a>
           )}
 
@@ -624,8 +650,11 @@ export default function PublicMenu() {
               rel="noopener noreferrer"
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full font-medium text-sm transition-all hover:scale-105 shadow-lg"
             >
+
               <Navigation size={18} />
+
               الموقع
+
             </a>
           )}
 
@@ -633,9 +662,13 @@ export default function PublicMenu() {
             onClick={handleShare}
             className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 border border-stone-600/50 text-white px-5 py-2.5 rounded-full font-medium text-sm transition-all hover:scale-105 shadow-lg"
           >
+
             <Share2 size={18} />
+
             شارك المنيو
+
           </button>
+
         </div>
 
         {/* =========================
@@ -643,6 +676,7 @@ export default function PublicMenu() {
         ========================= */}
 
         <div className="max-w-2xl mx-auto mb-8">
+
           <div className="relative">
 
             <Search
@@ -677,7 +711,9 @@ export default function PublicMenu() {
                 <X size={20} />
               </button>
             )}
+
           </div>
+
         </div>
 
         {/* =========================
@@ -721,6 +757,7 @@ export default function PublicMenu() {
                             setSearchQuery('');
                           }}
                         >
+
                           <div className="flex-1 min-w-0">
 
                             <h4 className="font-semibold text-white text-sm">
@@ -750,11 +787,15 @@ export default function PublicMenu() {
                               }}
                               className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95"
                             >
+
                               <Plus size={14} />
+
                               طلب
+
                             </button>
 
                           </div>
+
                         </div>
                       )
                     )}
@@ -763,6 +804,7 @@ export default function PublicMenu() {
                 )}
 
               </div>
+
             </div>
           )}
 
@@ -801,10 +843,12 @@ export default function PublicMenu() {
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-stone-700 to-stone-900 flex items-center justify-center">
+
                           <Coffee
                             size={40}
                             className="text-amber-500/50"
                           />
+
                         </div>
                       )}
 
@@ -823,6 +867,7 @@ export default function PublicMenu() {
                         )}
 
                       </div>
+
                     </button>
                   ))}
 
@@ -843,14 +888,18 @@ export default function PublicMenu() {
                 onClick={backToCategories}
                 className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors mb-6 text-sm font-medium"
               >
+
                 <ArrowRight size={20} />
+
                 العودة للفئات
+
               </button>
 
               <div className="flex items-center gap-4 mb-8">
 
                 {selectedCategory.image_url && (
                   <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0">
+
                     <img
                       src={
                         selectedCategory.image_url
@@ -860,10 +909,12 @@ export default function PublicMenu() {
                       }
                       className="w-full h-full object-cover"
                     />
+
                   </div>
                 )}
 
                 <div>
+
                   <h2 className="text-2xl font-bold text-white">
                     {selectedCategory.name}
                   </h2>
@@ -875,16 +926,20 @@ export default function PublicMenu() {
                       }
                     </p>
                   )}
+
                 </div>
+
               </div>
 
               {productsLoading ? (
                 <div className="space-y-3">
+
                   {Array.from({
                     length: 5,
                   }).map((_, i) => (
                     <ProductSkeleton key={i} />
                   ))}
+
                 </div>
               ) : categoryProducts.length === 0 ? (
                 <div className="text-center text-stone-500 py-12">
@@ -938,23 +993,29 @@ export default function PublicMenu() {
                             }
                             className="flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-white px-3.5 py-2 rounded-xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-amber-900/20"
                           >
+
                             <Plus size={16} />
+
                             طلب
+
                           </button>
 
                         </div>
+
                       </div>
                     )
                   )}
 
                 </div>
               )}
+
             </div>
           )}
+
       </div>
 
       {/* =========================
-          Floating Cart Button
+          زر السلة
       ========================= */}
 
       {cartCount > 0 && (
@@ -962,6 +1023,7 @@ export default function PublicMenu() {
           onClick={() => setShowCart(true)}
           className="fixed bottom-5 left-4 z-50 flex items-center gap-2 bg-amber-600 hover:bg-amber-500 text-white px-5 py-3.5 rounded-full shadow-2xl shadow-black/40 font-bold transition-all active:scale-95"
         >
+
           <ShoppingBag size={21} />
 
           <span>
@@ -971,11 +1033,12 @@ export default function PublicMenu() {
           <span className="min-w-6 h-6 px-1.5 rounded-full bg-white text-amber-700 flex items-center justify-center text-xs font-black">
             {cartCount}
           </span>
+
         </button>
       )}
 
       {/* =========================
-          Cart Modal
+          نافذة السلة
       ========================= */}
 
       {showCart && (
@@ -993,20 +1056,23 @@ export default function PublicMenu() {
             className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto bg-stone-950 border border-stone-800 rounded-t-3xl sm:rounded-3xl shadow-2xl"
           >
 
-            {/* Cart Header */}
+            {/* رأس السلة */}
 
             <div className="sticky top-0 z-10 bg-stone-950/95 backdrop-blur-md border-b border-stone-800 px-5 py-4 flex items-center justify-between">
 
               <div className="flex items-center gap-3">
 
                 <div className="w-10 h-10 rounded-xl bg-amber-600/15 flex items-center justify-center">
+
                   <ShoppingBag
                     size={21}
                     className="text-amber-500"
                   />
+
                 </div>
 
                 <div>
+
                   <h2 className="text-lg font-bold">
                     سلة الطلب
                   </h2>
@@ -1014,6 +1080,7 @@ export default function PublicMenu() {
                   <p className="text-xs text-stone-500">
                     {cartCount} صنف
                   </p>
+
                 </div>
 
               </div>
@@ -1024,14 +1091,16 @@ export default function PublicMenu() {
                 }
                 className="w-10 h-10 rounded-full bg-stone-900 hover:bg-stone-800 flex items-center justify-center text-stone-400 hover:text-white transition-colors"
               >
+
                 <X size={20} />
+
               </button>
 
             </div>
 
             <div className="p-5">
 
-              {/* Cart Items */}
+              {/* الأصناف */}
 
               <div className="space-y-3">
 
@@ -1067,7 +1136,9 @@ export default function PublicMenu() {
                         }
                         className="text-stone-600 hover:text-red-400 transition-colors"
                       >
+
                         <Trash2 size={18} />
+
                       </button>
 
                     </div>
@@ -1098,7 +1169,9 @@ export default function PublicMenu() {
                           }
                           className="w-8 h-8 rounded-lg bg-stone-700 hover:bg-stone-600 flex items-center justify-center transition-colors"
                         >
+
                           <Minus size={15} />
+
                         </button>
 
                         <span className="w-7 text-center font-bold">
@@ -1114,7 +1187,9 @@ export default function PublicMenu() {
                           }
                           className="w-8 h-8 rounded-lg bg-amber-600 hover:bg-amber-500 flex items-center justify-center transition-colors"
                         >
+
                           <Plus size={15} />
+
                         </button>
 
                       </div>
@@ -1126,16 +1201,19 @@ export default function PublicMenu() {
 
               </div>
 
-              {/* Customer Name */}
+              {/* اسم الزبون */}
 
               <div className="mt-6">
 
                 <label className="block text-sm font-medium text-stone-300 mb-2">
+
                   اسم الزبون
+
                   <span className="text-stone-600 font-normal">
                     {' '}
                     (اختياري)
                   </span>
+
                 </label>
 
                 <input
@@ -1151,16 +1229,19 @@ export default function PublicMenu() {
 
               </div>
 
-              {/* Notes */}
+              {/* الملاحظات */}
 
               <div className="mt-4">
 
                 <label className="block text-sm font-medium text-stone-300 mb-2">
+
                   ملاحظات الطلب
+
                   <span className="text-stone-600 font-normal">
                     {' '}
                     (اختياري)
                   </span>
+
                 </label>
 
                 <textarea
@@ -1177,7 +1258,7 @@ export default function PublicMenu() {
 
               </div>
 
-              {/* Total */}
+              {/* الإجمالي */}
 
               <div className="mt-6 bg-stone-900 border border-stone-800 rounded-2xl p-4">
 
@@ -1199,7 +1280,7 @@ export default function PublicMenu() {
 
               </div>
 
-              {/* WhatsApp Button */}
+              {/* واتساب */}
 
               <button
                 onClick={
@@ -1208,11 +1289,13 @@ export default function PublicMenu() {
                 disabled={!cart.length}
                 className="w-full mt-4 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-bold text-base transition-all active:scale-[0.98] shadow-lg shadow-green-950/20"
               >
+
                 <MessageCircle
                   size={21}
                 />
 
                 إرسال الطلب عبر واتساب
+
               </button>
 
               <p className="text-center text-xs text-stone-600 mt-3">
@@ -1220,7 +1303,9 @@ export default function PublicMenu() {
               </p>
 
             </div>
+
           </div>
+
         </div>
       )}
 
@@ -1247,8 +1332,6 @@ export default function PublicMenu() {
           0995339401
         </p>
 
-        {/* رقم عداد الزيارات */}
-
         {menuViews !== null && (
           <p
             className="text-stone-700 text-xs mt-1"
@@ -1261,6 +1344,7 @@ export default function PublicMenu() {
         )}
 
       </footer>
+
     </div>
   );
 }
